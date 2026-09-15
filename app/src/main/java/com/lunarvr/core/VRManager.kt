@@ -1,6 +1,6 @@
 package com.lunarvr.core
 
-import android.opengl.EGL10
+import android.opengl.GL10
 import android.opengl.EGLConfig
 import android.util.Log
 import android.view.GestureDetector
@@ -151,7 +151,7 @@ class VRManager(
     // GL renderer (GL thread = the render thread)
     // ------------------------------------------------------------------
     private val renderer = object : android.opengl.GLSurfaceView.Renderer {
-        override fun onSurfaceCreated(gl: EGL10?, config: EGLConfig?) {
+        override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
             Log.i(TAG, "[5-6/8] GL context: cameras + SBS configured")
             // if the surface was destroyed/recreated (rotation), the GL
             // objects died with the context — reset state and rebuild
@@ -197,11 +197,11 @@ class VRManager(
             lastNs = 0L
         }
 
-        override fun onSurfaceChanged(gl: EGL10?, width: Int, height: Int) {
+        override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
             stereo.onSurfaceChanged(width, height)
         }
 
-        override fun onDrawFrame(gl: EGL10?) {
+        override fun onDrawFrame(gl: GL10?) {
             if (!glReady) return
             drawFrame()
         }

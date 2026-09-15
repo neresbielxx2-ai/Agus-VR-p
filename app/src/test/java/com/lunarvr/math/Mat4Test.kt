@@ -56,15 +56,14 @@ class Mat4Test {
     fun `perspective maps point at -z into ndc depth`() {
         val f = 1.0f
         val m = Mat4().perspective(f, 1f, 0.1f, 100f)
-        val p = m.transformPoint(Vec3(0f, 0f, -5f))
-        val w = p.w
-        assertEquals(0.0, (p.x / w).toDouble(), 1e-4)
-        assertEquals(0.0, (p.y / w).toDouble(), 1e-4)
-        val d = p.z / w
-        // between -1 and 1, closer than the horizon
-        assertTrue(-1.0 < d && d < 1.0)
+        val px = m.m[8] * -5f + m.m[12]
+        val py = m.m[9] * -5f + m.m[13]
+        val pz = m.m[10] * -5f + m.m[14]
+        val pw = m.m[11] * -5f + m.m[15]
+        assertEquals(0.0, (px / pw).toDouble(), 1e-4)
+        assertEquals(0.0, (py / pw).toDouble(), 1e-4)
+        val d = (pz / pw).toDouble()
+        // between -1 and 1, in front of the near plane
+        org.junit.Assert.assertTrue(-1.0 < d && d < 1.0)
     }
-
-    private fun assertTrue(cond: Boolean) =
-        assertEquals(true, cond)
 }

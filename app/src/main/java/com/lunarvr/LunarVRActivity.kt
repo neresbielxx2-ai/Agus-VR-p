@@ -41,10 +41,14 @@ class LunarVRActivity : ComponentActivity() {
     private var warningView: TextView? = null
     private var vrManager: VRManager? = null
     private var vrActive = false
-    private var pendingStartAfterPermission = false
+
+    private val cameraPermission = registerForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) startVR()
+    }
 
     companion object {
-        private const val REQ_CAMERA = 42
         // EGL_OPENGL_ES3_BIT_KHR (not exposed by android.opengl.EGL14)
         private const val EGL_OPENGL_ES3_BIT_KHR = 0x400
     }
@@ -149,9 +153,8 @@ class LunarVRActivity : ComponentActivity() {
             stateListAnimator = null
             setPadding(dp(36), 0, dp(36), 0)
             setOnClickListener {
-                pendingStartAfterPermission = true
                 if (hasCameraPermission()) startVR()
-                else requestPermissions(Manifest.permission.CAMERA, REQ_CAMERA)
+                else cameraPermission.launch(Manifest.permission.CAMERA)
             }
         }
         btn.layoutParams = LinearLayout.LayoutParams(dp(250), dp(54)).apply {
@@ -240,14 +243,6 @@ class LunarVRActivity : ComponentActivity() {
     // ------------------------------------------------------------------
     // VR entry
     // ------------------------------------------------------------------
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQ_CAMERA && pendingStartAfterPermission) {
-            pendingStartAfterPermission = false
-            startVR()
-        }
-    }
-
     private fun startVR() {
         if (vrActive) return
         if (!hasGles3()) {

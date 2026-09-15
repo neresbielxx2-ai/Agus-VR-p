@@ -16,13 +16,13 @@ class Vec3Test {
     fun `length and normalize`() {
         val v = Vec3(3f, 0f, 4f)
         assertEquals(5.0, v.length().toDouble(), 1e-5)
-        v.normalize()
-        assertVec(v, 0.6, 0.0, 0.8)
+        val n = v.normalize()
+        assertVec(n, 0.6, 0.0, 0.8)
     }
 
     @Test
     fun `dot`() {
-        assertEquals(11.0, Vec3(1f, 2f, 3f).dot(Vec3(4f, 5f, 6f)).toDouble(), 1e-5)
+        assertEquals(32.0, Vec3(1f, 2f, 3f).dot(Vec3(4f, 5f, 6f)).toDouble(), 1e-5)
     }
 
     @Test
