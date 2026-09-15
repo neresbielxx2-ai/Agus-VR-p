@@ -53,7 +53,7 @@ class SoundBank(private val context: Context) {
         if (!enabled) return
         val id = ids[name] ?: return
         if (id <= 0) return
-        pool.play(id, volume, volume, 1, SoundPool.NO_LOOP, 1.0f)
+        pool.play(id, volume, volume, 1, -1, 1.0f)
     }
 
     fun setVolume(pct: Int) {

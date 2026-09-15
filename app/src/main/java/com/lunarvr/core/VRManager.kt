@@ -1,6 +1,6 @@
 package com.lunarvr.core
 
-import android.opengl.GL10
+import javax.microedition.khronos.opengles.GL10
 import android.opengl.EGLConfig
 import android.util.Log
 import android.view.GestureDetector
