@@ -37,10 +37,33 @@ jobs:
         run: chmod +x gradlew
 
       - name: Run unit tests (math engine)
-        run: ./gradlew testDebugUnitTest --stacktrace
+        run: |
+          ./gradlew testDebugUnitTest --stacktrace 2>&1 | tee /tmp/test.log
+          status=${PIPESTATUS[0]}
+          if [ $status -ne 0 ]; then
+            echo "=== Gradle errors (from /tmp/test.log) ==="
+            grep -E "^e: |FAILURE:|What went wrong|> Task .* FAILED|AssertionError|junit.framework" /tmp/test.log | head -100 || true
+            grep -E "^e: " /tmp/test.log | head -60 | while IFS= read -r line; do
+              echo "::error title=Kotlin compile error::$line"
+            done
+            grep -E "AssertionError|failed" /tmp/test.log | head -30 | while IFS= read -r line; do
+              echo "::error title=Test failure::$line"
+            done
+          fi
+          exit $status
 
       - name: Build debug APK
-        run: ./gradlew assembleDebug --stacktrace
+        run: |
+          ./gradlew assembleDebug --stacktrace 2>&1 | tee /tmp/build.log
+          status=${PIPESTATUS[0]}
+          if [ $status -ne 0 ]; then
+            echo "=== Gradle errors (from /tmp/build.log) ==="
+            grep -E "^e: |FAILURE:|What went wrong|> Task .* FAILED|error:|AAPT" /tmp/build.log | head -100 || true
+            grep -E "^e: |error:" /tmp/build.log | head -60 | while IFS= read -r line; do
+              echo "::error title=Build error::$line"
+            done
+          fi
+          exit $status
 
       - name: Show APK output
         run: ls -la app/build/outputs/apk/debug/
