@@ -14,7 +14,7 @@ import kotlin.math.sin
  * Sounds are generated as short PCM WAV files in the cache directory and
  * played through a SoundPool. Volume and enable/disable come from Settings.
  */
-class SoundBank(context: Context) {
+class SoundBank(private val context: Context) {
 
     private val pool = SoundPool.Builder()
         .setMaxStreams(4)
@@ -75,7 +75,7 @@ class SoundBank(context: Context) {
     }
 
     private fun hoverWav(freq: Int): ShortArray {
-        val dur = 0.05
+        val dur = 0.05f
         val n = (freq * dur).toInt()
         val out = ShortArray(n)
         for (i in 0 until n) {
@@ -86,7 +86,7 @@ class SoundBank(context: Context) {
     }
 
     private fun clickWav(freq: Int): ShortArray {
-        val dur = 0.12
+        val dur = 0.12f
         val n = (freq * dur).toInt()
         val out = ShortArray(n)
         for (i in 0 until n) {
@@ -98,7 +98,7 @@ class SoundBank(context: Context) {
     }
 
     private fun openWav(freq: Int): ShortArray {
-        val dur = 0.20
+        val dur = 0.20f
         val n = (freq * dur).toInt()
         val out = ShortArray(n)
         for (i in 0 until n) {
@@ -111,7 +111,7 @@ class SoundBank(context: Context) {
     }
 
     private fun closeWav(freq: Int): ShortArray {
-        val dur = 0.17
+        val dur = 0.17f
         val n = (freq * dur).toInt()
         val out = ShortArray(n)
         for (i in 0 until n) {
@@ -123,7 +123,7 @@ class SoundBank(context: Context) {
     }
 
     private fun toggleWav(freq: Int): ShortArray {
-        val dur = 0.11
+        val dur = 0.11f
         val n = (freq * dur).toInt()
         val out = ShortArray(n)
         for (i in 0 until n) {
@@ -136,7 +136,7 @@ class SoundBank(context: Context) {
     }
 
     private fun errorWav(freq: Int): ShortArray {
-        val dur = 0.18
+        val dur = 0.18f
         val n = (freq * dur).toInt()
         val out = ShortArray(n)
         for (i in 0 until n) {

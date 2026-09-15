@@ -11,7 +11,6 @@ import android.hardware.Sensor
 import android.hardware.SensorManager
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
-import android.opengl.EGL10
 import android.opengl.EGL14
 import android.opengl.GLSurfaceView
 import android.os.Build
@@ -46,6 +45,8 @@ class LunarVRActivity : ComponentActivity() {
 
     companion object {
         private const val REQ_CAMERA = 42
+        // EGL_OPENGL_ES3_BIT_KHR (not exposed by android.opengl.EGL14)
+        private const val EGL_OPENGL_ES3_BIT_KHR = 0x400
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -150,7 +151,7 @@ class LunarVRActivity : ComponentActivity() {
             setOnClickListener {
                 pendingStartAfterPermission = true
                 if (hasCameraPermission()) startVR()
-                else requestPermissions(arrayOf(Manifest.permission.CAMERA), REQ_CAMERA)
+                else requestPermissions(Manifest.permission.CAMERA, REQ_CAMERA)
             }
         }
         btn.layoutParams = LinearLayout.LayoutParams(dp(250), dp(54)).apply {
@@ -216,11 +217,11 @@ class LunarVRActivity : ComponentActivity() {
 
     private fun hasGles3(): Boolean {
         return try {
-            val display = EGL14.eglGetDisplay(EGL10.EGL_DEFAULT_DISPLAY)
+            val display = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY)
             val v = IntArray(2)
             if (!EGL14.eglInitialize(display, v, 0, v, 1)) return false
             val attrs = intArrayOf(
-                EGL14.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES3_BIT_KHR,
+                EGL14.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES3_BIT_KHR,
                 EGL14.EGL_SURFACE_TYPE, EGL14.EGL_WINDOW_BIT,
                 EGL14.EGL_RED_SIZE, 8, EGL14.EGL_GREEN_SIZE, 8,
                 EGL14.EGL_BLUE_SIZE, 8, EGL14.EGL_ALPHA_SIZE, 8,
@@ -239,7 +240,7 @@ class LunarVRActivity : ComponentActivity() {
     // ------------------------------------------------------------------
     // VR entry
     // ------------------------------------------------------------------
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQ_CAMERA && pendingStartAfterPermission) {
             pendingStartAfterPermission = false
