@@ -49,6 +49,6 @@ class Vec3Test {
     fun `rotate preserves length`() {
         val q = Quat.fromAxisAngle(0.3f, 1f, -0.2f, 1.7f)
         val v = q.rotate(Vec3(0.7f, -0.4f, 1.2f))
-        assertEquals(1.4457f, v.length().toFloat(), 1e-3)
+        assertEquals(1.4457, v.length().toDouble(), 1e-3)
     }
 }
