@@ -138,8 +138,8 @@ object GLUtil {
         es2VaoCounter = 0
     }
 
-    /** Android's GLES30 class only exposes GLES3-specific entry points; the
-     *  glGen*/glDelete* calls come in (count, int[], offset) form. */
+    // Android's GLES30 class only exposes GLES3-specific entry points; the
+    // glGenVertexArrays/glDeleteVertexArrays calls come in (count, int[], offset) form.
     fun genVertexArray(): Int {
         if (isES3) {
             val a = IntArray(1)
