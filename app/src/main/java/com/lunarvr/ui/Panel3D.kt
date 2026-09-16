@@ -169,10 +169,10 @@ class Panel3D(
             -hw, hh, 0f, 0f, 0f,
             hw, hh, 0f, 1f, 0f
         )
-        vao = GLES30.glGenVertexArrays()
+        vao = GLUtil.genVertexArray()
         GLES30.glBindVertexArray(vao)
-        vbo = GLES30.glGenBuffers()
-        GLES30.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo)
+        vbo = GLUtil.genBuffer()
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo)
         val bb = ByteBuffer.allocateDirect(data.size * 4).order(ByteOrder.nativeOrder())
         val fb = bb.asFloatBuffer()
         fb.put(data)
@@ -210,8 +210,8 @@ class Panel3D(
         val sScale = currentScale * 1.14f
         val sModel = Mat4().compose(sp, yawQ, Vec3(sScale, sScale, sScale))
         GLES20.glUniformMatrix4fv(uModel, 1, false, sModel.m, 0)
-        GLES30.glActiveTexture(GLES20.GL_TEXTURE0)
-        GLES30.glBindTexture(GLES20.GL_TEXTURE_2D, shadowTex)
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, shadowTex)
         GLES20.glUniform1i(uTex, 0)
         GLES20.glUniform1f(uAlpha, 0.34f * e)
         GLES30.glBindVertexArray(vao)
@@ -220,7 +220,7 @@ class Panel3D(
         // the panel itself
         val pModel = Mat4().compose(currentPos, yawQ, Vec3(currentScale, currentScale, currentScale))
         GLES20.glUniformMatrix4fv(uModel, 1, false, pModel.m, 0)
-        GLES30.glBindTexture(GLES20.GL_TEXTURE_2D, texture.texId)
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture.texId)
         GLES20.glUniform1f(uAlpha, e)
         GLES30.glBindVertexArray(vao)
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4)

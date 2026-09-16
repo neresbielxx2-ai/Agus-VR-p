@@ -22,26 +22,26 @@ class RenderTarget(var width: Int, var height: Int) {
 
     init {
         colorTextureId = GLUtil.createTexture(width, height)
-        fbo = GLES30.glGenFramebuffer()
-        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, fbo)
-        GLES30.glFramebufferTexture2D(GLES30.GL_FRAMEBUFFER, GLES30.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D, colorTextureId, 0)
-        depthRb = GLES30.glGenRenderbuffer()
-        GLES30.glBindRenderbuffer(GLES30.GL_RENDERBUFFER, depthRb)
-        GLES30.glRenderbufferStorage(GLES30.GL_RENDERBUFFER, GLES30.GL_DEPTH_COMPONENT16, width, height)
-        GLES30.glFramebufferRenderbuffer(GLES30.GL_FRAMEBUFFER, GLES30.GL_DEPTH_ATTACHMENT, GLES30.GL_RENDERBUFFER, depthRb)
-        GLES30.glCheckFramebufferStatus(GLES30.GL_FRAMEBUFFER)
-        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0)
+        fbo = GLUtil.genFramebuffer()
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, fbo)
+        GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D, colorTextureId, 0)
+        depthRb = GLUtil.genRenderbuffer()
+        GLES20.glBindRenderbuffer(GLES20.GL_RENDERBUFFER, depthRb)
+        GLES20.glRenderbufferStorage(GLES20.GL_RENDERBUFFER, GLES20.GL_DEPTH_COMPONENT16, width, height)
+        GLES20.glFramebufferRenderbuffer(GLES20.GL_FRAMEBUFFER, GLES20.GL_DEPTH_ATTACHMENT, GLES20.GL_RENDERBUFFER, depthRb)
+        GLES20.glCheckFramebufferStatus(GLES20.GL_FRAMEBUFFER)
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0)
     }
 
     fun bind() {
-        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, fbo)
-        GLES30.glViewport(0, 0, width, height)
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, fbo)
+        GLES20.glViewport(0, 0, width, height)
     }
 
     fun release() {
-        if (fbo != 0) GLES30.glDeleteFramebuffers(1, intArrayOf(fbo), 0)
-        if (colorTextureId != 0) GLES30.glDeleteTextures(1, intArrayOf(colorTextureId), 0)
-        if (depthRb != 0) GLES30.glDeleteRenderbuffers(1, intArrayOf(depthRb), 0)
+        if (fbo != 0) GLES20.glDeleteFramebuffers(1, intArrayOf(fbo), 0)
+        if (colorTextureId != 0) GLES20.glDeleteTextures(1, intArrayOf(colorTextureId), 0)
+        if (depthRb != 0) GLES20.glDeleteRenderbuffers(1, intArrayOf(depthRb), 0)
         fbo = 0; colorTextureId = 0; depthRb = 0
     }
 }
@@ -113,10 +113,10 @@ class StereoRenderer {
         """.trimIndent()
         blitProgram = GLUtil.createProgram(vs, fs, "aPos" to 0)
         blitTexUniform = GLES20.glGetUniformLocation(blitProgram, "uTex")
-        blitVao = GLES30.glGenVertexArrays()
+        blitVao = GLUtil.genVertexArray()
         GLES30.glBindVertexArray(blitVao)
-        blitVbo = GLES30.glGenBuffers()
-        GLES30.glBindBuffer(GLES20.GL_ARRAY_BUFFER, blitVbo)
+        blitVbo = GLUtil.genBuffer()
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, blitVbo)
         // Fullscreen triangle
         val verts = floatArrayOf(-1f, -1f, 0f, 3f, -1f, 0f, -1f, 3f, 0f)
         val buf = GLUtil.directFloatBuffer(verts)
@@ -176,13 +176,13 @@ class StereoRenderer {
         }
 
         GLES20.glDisable(GLES20.GL_SCISSOR_TEST)
-        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0)
-        GLES30.glViewport(0, 0, surfaceWidth, surfaceHeight)
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0)
+        GLES20.glViewport(0, 0, surfaceWidth, surfaceHeight)
         GLES20.glDisable(GLES20.GL_DEPTH_TEST)
         GLES20.glDisable(GLES20.GL_BLEND)
         GLES20.glUseProgram(blitProgram)
-        GLES30.glActiveTexture(GLES20.GL_TEXTURE0)
-        GLES30.glBindTexture(GLES20.GL_TEXTURE_2D, rt.colorTextureId)
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, rt.colorTextureId)
         GLES20.glUniform1i(blitTexUniform, 0)
         GLES30.glBindVertexArray(blitVao)
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 3)

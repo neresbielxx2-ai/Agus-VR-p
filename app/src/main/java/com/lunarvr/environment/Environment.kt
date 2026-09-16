@@ -118,10 +118,10 @@ class Environment {
                 verts[i++] = (radius * st * sin(phi.toDouble())).toFloat()
             }
         }
-        skyVao = GLES30.glGenVertexArrays()
+        skyVao = GLUtil.genVertexArray()
         GLES30.glBindVertexArray(skyVao)
-        skyVbo = GLES30.glGenBuffers()
-        GLES30.glBindBuffer(GLES20.GL_ARRAY_BUFFER, skyVbo)
+        skyVbo = GLUtil.genBuffer()
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, skyVbo)
         val bb = GLUtil.directFloatBuffer(verts)
         GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, verts.size * 4, bb, GLES20.GL_STATIC_DRAW)
         GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 12, 0)
@@ -190,11 +190,11 @@ class Environment {
             data[i++] = (1.2f + rnd.nextFloat() * 2.2f) // size px
             data[i++] = rnd.nextFloat() * 6.28f          // phase
         }
-        starVao = GLES30.glGenVertexArrays()
+        starVao = GLUtil.genVertexArray()
         GLES30.glBindVertexArray(starVao)
         val oldVbo = starVbo
-        starVbo = GLES30.glGenBuffers()
-        GLES30.glBindBuffer(GLES20.GL_ARRAY_BUFFER, starVbo)
+        starVbo = GLUtil.genBuffer()
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, starVbo)
         val bb = GLUtil.directFloatBuffer(data)
         GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, data.size * 4, bb, GLES20.GL_STATIC_DRAW)
         // aPos
@@ -250,10 +250,10 @@ class Environment {
             -5f, 0f, 5f, 0f, 0f,
             5f, 0f, 5f, 1f, 0f
         )
-        floorVao = GLES30.glGenVertexArrays()
+        floorVao = GLUtil.genVertexArray()
         GLES30.glBindVertexArray(floorVao)
-        floorVbo = GLES30.glGenBuffers()
-        GLES30.glBindBuffer(GLES20.GL_ARRAY_BUFFER, floorVbo)
+        floorVbo = GLUtil.genBuffer()
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, floorVbo)
         val bb = GLUtil.directFloatBuffer(verts)
         GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, verts.size * 4, bb, GLES20.GL_STATIC_DRAW)
         GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 20, 0)
@@ -331,7 +331,7 @@ class Environment {
         GLES20.glUniformMatrix4fv(uFloorModel, 1, false, model.m, 0)
         GLES20.glUniformMatrix4fv(uFloorView, 1, false, view.m, 0)
         GLES20.glUniformMatrix4fv(uFloorProj, 1, false, proj.m, 0)
-        GLES30.glActiveTexture(GLES20.GL_TEXTURE0)
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, floorTex)
         GLES20.glUniform1i(uFloorTex, 0)
         GLES20.glUniform1f(uFloorAlpha, 0.9f)

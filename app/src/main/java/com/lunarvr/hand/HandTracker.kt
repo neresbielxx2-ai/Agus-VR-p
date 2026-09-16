@@ -12,11 +12,10 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
+import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.tasks.core.BaseOptions
-import com.google.mediapipe.tasks.vision.core.ImageProxy as MPImageProxy
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarker
-import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarkerOptions
 import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarkerResult
 import java.io.File
 import java.io.FileInputStream
@@ -148,7 +147,7 @@ class HandTracker(private val context: Context) {
                 .setModelAssetFileDescriptor(FileInputStream(modelFile).channel.fileDescriptor)
                 .build()
         }
-        val options = HandLandmarkerOptions.builder()
+        val options = HandLandmarker.HandLandmarkerOptions.builder()
             .setBaseOptions(base)
             .setRunningMode(RunningMode.VIDEO)
             .setNumHands(2)
@@ -174,18 +173,33 @@ class HandTracker(private val context: Context) {
             proxy.close()
             return@Analyzer
         }
-        val rotation = proxy.imageInfo.rotationDegrees
         var ts = System.currentTimeMillis()
         if (ts <= lastTsMs) ts = lastTsMs + 1
         lastTsMs = ts
+        var bmp = try { media.toBitmap() } catch (t: Throwable) { null }
+        if (bmp != null) {
+            val rot = proxy.imageInfo.rotationDegrees
+            if (rot != 0) {
+                val m = android.graphics.Matrix().apply { setRotate(rot.toFloat()) }
+                val rotated = android.graphics.Bitmap.createBitmap(
+                    bmp, 0, 0, bmp.width, bmp.height, m, true
+                )
+                bmp.recycle()
+                bmp = rotated
+            }
+        }
+        if (bmp == null) {
+            proxy.close()
+            return@Analyzer
+        }
         try {
-            val mpImage = MPImageProxy.fromMediaImage(media, rotation)
+            val mpImage = BitmapImageBuilder(bmp).build()
             val result = landmarker.detectForVideo(mpImage, ts)
-            mpImage.close()
             publish(result)
         } catch (t: Throwable) {
             Log.e(TAG, "detect failed", t)
         } finally {
+            bmp.recycle()
             proxy.close()
         }
     }
