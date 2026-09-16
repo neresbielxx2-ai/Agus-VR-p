@@ -1,7 +1,6 @@
 package com.lunarvr.ui
 
 import android.opengl.GLES20
-import android.opengl.GLES30
 import com.lunarvr.math.Mat4
 import com.lunarvr.math.Quat
 import com.lunarvr.math.Vec3
@@ -170,7 +169,7 @@ class Panel3D(
             hw, hh, 0f, 1f, 0f
         )
         vao = GLUtil.genVertexArray()
-        GLES30.glBindVertexArray(vao)
+        GLUtil.bindVertexArray(vao)
         vbo = GLUtil.genBuffer()
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo)
         val bb = ByteBuffer.allocateDirect(data.size * 4).order(ByteOrder.nativeOrder())
@@ -179,11 +178,9 @@ class Panel3D(
         fb.position(0)
         bb.position(0)
         GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, data.size * 4, bb, GLES20.GL_STATIC_DRAW)
-        GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 20, 0)
-        GLES20.glEnableVertexAttribArray(0)
-        GLES20.glVertexAttribPointer(1, 2, GLES20.GL_FLOAT, false, 20, 12)
-        GLES20.glEnableVertexAttribArray(1)
-        GLES30.glBindVertexArray(0)
+        GLUtil.attrPointer(vao, 0, 3, GLES20.GL_FLOAT, 20, 0)
+        GLUtil.attrPointer(vao, 1, 2, GLES20.GL_FLOAT, 20, 12)
+        GLUtil.bindVertexArray(0)
     }
 
     /**
@@ -214,7 +211,7 @@ class Panel3D(
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, shadowTex)
         GLES20.glUniform1i(uTex, 0)
         GLES20.glUniform1f(uAlpha, 0.34f * e)
-        GLES30.glBindVertexArray(vao)
+        GLUtil.bindVertexArray(vao)
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4)
 
         // the panel itself
@@ -222,9 +219,9 @@ class Panel3D(
         GLES20.glUniformMatrix4fv(uModel, 1, false, pModel.m, 0)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture.texId)
         GLES20.glUniform1f(uAlpha, e)
-        GLES30.glBindVertexArray(vao)
+        GLUtil.bindVertexArray(vao)
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4)
-        GLES30.glBindVertexArray(0)
+        GLUtil.bindVertexArray(0)
     }
 
     /** GL context was destroyed: objects are gone, just reset the ids. */
@@ -235,7 +232,7 @@ class Panel3D(
     }
 
     fun release() {
-        if (vao != 0) GLES30.glDeleteVertexArrays(1, intArrayOf(vao), 0)
+        if (vao != 0) GLUtil.delVertexArray(vao)
         if (vbo != 0) GLES20.glDeleteBuffers(1, intArrayOf(vbo), 0)
         vao = 0; vbo = 0
         texture.release()

@@ -6,7 +6,6 @@ import android.graphics.Paint
 import android.graphics.RadialGradient
 import android.graphics.Shader
 import android.opengl.GLES20
-import android.opengl.GLES30
 import com.lunarvr.math.Mat4
 import com.lunarvr.math.Quat
 import com.lunarvr.math.Vec3
@@ -68,16 +67,14 @@ class RayRenderer {
         uRayView = GLES20.glGetUniformLocation(rayProgram, "uView")
         uRayColor = GLES20.glGetUniformLocation(rayProgram, "uColor")
         rayVao = GLUtil.genVertexArray()
-        GLES30.glBindVertexArray(rayVao)
+        GLUtil.bindVertexArray(rayVao)
         rayVbo = GLUtil.genBuffer()
         // interleaved: pos(3) + t(1)
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, rayVbo)
         GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, 16 * 8 * 4, null, GLES20.GL_DYNAMIC_DRAW)
-        GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 16, 0)
-        GLES20.glEnableVertexAttribArray(0)
-        GLES20.glVertexAttribPointer(1, 1, GLES20.GL_FLOAT, false, 16, 12)
-        GLES20.glEnableVertexAttribArray(1)
-        GLES30.glBindVertexArray(0)
+        GLUtil.attrPointer(rayVao, 0, 3, GLES20.GL_FLOAT, 16, 0)
+        GLUtil.attrPointer(rayVao, 1, 1, GLES20.GL_FLOAT, 16, 12)
+        GLUtil.bindVertexArray(0)
 
         // cursor (billboard ring, textured)
         val cvs = """
@@ -109,7 +106,7 @@ class RayRenderer {
         uCurTint = GLES20.glGetUniformLocation(cursorProgram, "uTint")
         cursorTexLoc = GLES20.glGetUniformLocation(cursorProgram, "uTex")
         cursorVao = GLUtil.genVertexArray()
-        GLES30.glBindVertexArray(cursorVao)
+        GLUtil.bindVertexArray(cursorVao)
         cursorVbo = GLUtil.genBuffer()
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, cursorVbo)
         val quad = floatArrayOf(
@@ -120,11 +117,9 @@ class RayRenderer {
         )
         val bb = GLUtil.directFloatBuffer(quad)
         GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, quad.size * 4, bb, GLES20.GL_STATIC_DRAW)
-        GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 20, 0)
-        GLES20.glEnableVertexAttribArray(0)
-        GLES20.glVertexAttribPointer(1, 2, GLES20.GL_FLOAT, false, 20, 12)
-        GLES20.glEnableVertexAttribArray(1)
-        GLES30.glBindVertexArray(0)
+        GLUtil.attrPointer(cursorVao, 0, 3, GLES20.GL_FLOAT, 20, 0)
+        GLUtil.attrPointer(cursorVao, 1, 2, GLES20.GL_FLOAT, 20, 12)
+        GLUtil.bindVertexArray(0)
 
         // ring cursor texture
         val size = 128
@@ -192,11 +187,11 @@ class RayRenderer {
         GLES20.glUniformMatrix4fv(uRayView, 1, false, view.m, 0)
         // main line
         GLES20.glUniform4f(uRayColor, ray.rayColorR, ray.rayColorG, ray.rayColorB, 0.8f)
-        GLES30.glBindVertexArray(rayVao)
+        GLUtil.bindVertexArray(rayVao)
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, rayVbo)
         GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, 0, data.size * 4, bb)
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4)
-        GLES30.glBindVertexArray(0)
+        GLUtil.bindVertexArray(0)
 
         // cursor at the hit point (or faint at the far end)
         val cp = if (ray.hit) ray.hitPoint else e
@@ -227,9 +222,9 @@ class RayRenderer {
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, cursorTex)
         GLES20.glUniform1i(cursorTexLoc, 0)
         GLES20.glUniform4f(uCurTint, r, g, b, a)
-        GLES30.glBindVertexArray(cursorVao)
+        GLUtil.bindVertexArray(cursorVao)
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4)
-        GLES30.glBindVertexArray(0)
+        GLUtil.bindVertexArray(0)
     }
 
     fun draw(
@@ -258,8 +253,8 @@ class RayRenderer {
     fun release() {
         if (rayProgram != 0) GLES20.glDeleteProgram(rayProgram)
         if (cursorProgram != 0) GLES20.glDeleteProgram(cursorProgram)
-        if (rayVao != 0) GLES30.glDeleteVertexArrays(1, intArrayOf(rayVao), 0)
-        if (cursorVao != 0) GLES30.glDeleteVertexArrays(1, intArrayOf(cursorVao), 0)
+        if (rayVao != 0) GLUtil.delVertexArray(rayVao)
+        if (cursorVao != 0) GLUtil.delVertexArray(cursorVao)
         if (rayVbo != 0) GLES20.glDeleteBuffers(1, intArrayOf(rayVbo), 0)
         if (cursorVbo != 0) GLES20.glDeleteBuffers(1, intArrayOf(cursorVbo), 0)
         if (cursorTex != 0) GLES20.glDeleteTextures(1, intArrayOf(cursorTex), 0)

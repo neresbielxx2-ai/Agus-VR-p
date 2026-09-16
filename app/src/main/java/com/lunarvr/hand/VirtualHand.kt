@@ -6,7 +6,6 @@ import android.graphics.Paint
 import android.graphics.RadialGradient
 import android.graphics.Shader
 import android.opengl.GLES20
-import android.opengl.GLES30
 import com.lunarvr.math.Mat4
 import com.lunarvr.math.Quat
 import com.lunarvr.math.Vec3
@@ -104,18 +103,16 @@ class VirtualHand {
         uGlow = GLES20.glGetUniformLocation(program, "uGlow")
 
         vao = GLUtil.genVertexArray()
-        GLES30.glBindVertexArray(vao)
+        GLUtil.bindVertexArray(vao)
         vboPos = GLUtil.genBuffer()
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vboPos)
         GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, maxVerts * 3 * 4, null, GLES20.GL_DYNAMIC_DRAW)
-        GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 12, 0)
-        GLES20.glEnableVertexAttribArray(0)
+        GLUtil.attrPointer(vao, 0, 3, GLES20.GL_FLOAT, 12, 0)
         vboNrm = GLUtil.genBuffer()
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vboNrm)
         GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, maxVerts * 3 * 4, null, GLES20.GL_DYNAMIC_DRAW)
-        GLES20.glVertexAttribPointer(1, 3, GLES20.GL_FLOAT, false, 12, 0)
-        GLES20.glEnableVertexAttribArray(1)
-        GLES30.glBindVertexArray(0)
+        GLUtil.attrPointer(vao, 1, 3, GLES20.GL_FLOAT, 12, 0)
+        GLUtil.bindVertexArray(0)
 
         // aura billboard
         val avs = """
@@ -147,7 +144,7 @@ class VirtualHand {
         uAuraProj = GLES20.glGetUniformLocation(auraProgram, "uProj")
         uAuraColor = GLES20.glGetUniformLocation(auraProgram, "uColor")
         auraVao = GLUtil.genVertexArray()
-        GLES30.glBindVertexArray(auraVao)
+        GLUtil.bindVertexArray(auraVao)
         auraVbo = GLUtil.genBuffer()
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, auraVbo)
         val quad = floatArrayOf(
@@ -158,11 +155,9 @@ class VirtualHand {
         )
         val bb = GLUtil.directFloatBuffer(quad)
         GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, quad.size * 4, bb, GLES20.GL_STATIC_DRAW)
-        GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 20, 0)
-        GLES20.glEnableVertexAttribArray(0)
-        GLES20.glVertexAttribPointer(1, 2, GLES20.GL_FLOAT, false, 20, 12)
-        GLES20.glEnableVertexAttribArray(1)
-        GLES30.glBindVertexArray(0)
+        GLUtil.attrPointer(auraVao, 0, 3, GLES20.GL_FLOAT, 20, 0)
+        GLUtil.attrPointer(auraVao, 1, 2, GLES20.GL_FLOAT, 20, 12)
+        GLUtil.bindVertexArray(0)
     }
 
     // ------------------------------------------------------------------
@@ -357,7 +352,7 @@ class VirtualHand {
         val glow = if (hand.pinching) 0.6f + 0.4f * sin(timeSec.toDouble() * 18).toFloat() else if (hand.isPoint) 0.25f else 0f
         GLES20.glUniform1f(uGlow, glow)
 
-        GLES30.glBindVertexArray(vao)
+        GLUtil.bindVertexArray(vao)
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vboPos)
         val bb = GLUtil.directFloatBuffer(pos, 0, vertCount * 3)
         GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, 0, vertCount * 3 * 4, bb)
@@ -365,7 +360,7 @@ class VirtualHand {
         val bb2 = GLUtil.directFloatBuffer(nrm, 0, vertCount * 3)
         GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, 0, vertCount * 3 * 4, bb2)
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertCount)
-        GLES30.glBindVertexArray(0)
+        GLUtil.bindVertexArray(0)
 
         // aura around the palm (skipped on LOW)
         if (quality > 0) {
@@ -393,9 +388,9 @@ class VirtualHand {
         GLES20.glUniformMatrix4fv(uAuraView, 1, false, view.m, 0)
         GLES20.glUniformMatrix4fv(uAuraModel, 1, false, model.m, 0)
         GLES20.glUniform4f(uAuraColor, r, g, b, a)
-        GLES30.glBindVertexArray(auraVao)
+        GLUtil.bindVertexArray(auraVao)
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4)
-        GLES30.glBindVertexArray(0)
+        GLUtil.bindVertexArray(0)
     }
 
     /** GL context was destroyed: objects are gone, just reset the ids. */
@@ -409,8 +404,8 @@ class VirtualHand {
     fun release() {
         if (program != 0) GLES20.glDeleteProgram(program)
         if (auraProgram != 0) GLES20.glDeleteProgram(auraProgram)
-        if (vao != 0) GLES30.glDeleteVertexArrays(1, intArrayOf(vao), 0)
-        if (auraVao != 0) GLES30.glDeleteVertexArrays(1, intArrayOf(auraVao), 0)
+        if (vao != 0) GLUtil.delVertexArray(vao)
+        if (auraVao != 0) GLUtil.delVertexArray(auraVao)
         if (vboPos != 0) GLES20.glDeleteBuffers(1, intArrayOf(vboPos), 0)
         if (vboNrm != 0) GLES20.glDeleteBuffers(1, intArrayOf(vboNrm), 0)
         if (auraVbo != 0) GLES20.glDeleteBuffers(1, intArrayOf(auraVbo), 0)

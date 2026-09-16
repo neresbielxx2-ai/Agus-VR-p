@@ -19,6 +19,7 @@ import com.lunarvr.hand.VirtualHand
 import com.lunarvr.interaction.InteractionManager
 import com.lunarvr.math.Quat
 import com.lunarvr.math.Vec3
+import com.lunarvr.scene.GLUtil
 import com.lunarvr.scene.SceneNode
 import com.lunarvr.settings.SettingsStore
 import com.lunarvr.stereo.StereoRenderer
@@ -154,6 +155,9 @@ class VRManager(
     private val renderer = object : android.opengl.GLSurfaceView.Renderer {
         override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
             Log.i(TAG, "[5-6/8] GL context: cameras + SBS configured")
+            // ES2/ES3 compat: detect the context version and (re)start the
+            // VAO-emulation state before any GL object is created
+            GLUtil.initCompat()
             // if the surface was destroyed/recreated (rotation), the GL
             // objects died with the context — reset state and rebuild
             val recreating = ::menus.isInitialized

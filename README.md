@@ -1,7 +1,7 @@
 # LUNAR VR
 
-**Sistema operacional VR 3DOF para Android** — motor VR próprio (OpenGL ES 3.0),
-projetado para VR Box / Cardboard, com **Side-by-Side (SBS)**, rastreamento de
+**Sistema operacional VR 3DOF para Android** — motor VR próprio (OpenGL ES 2.0+,
+usa ES 3.0 quando o dispositivo oferece), projetado para VR Box / Cardboard, com **Side-by-Side (SBS)**, rastreamento de
 cabeça **3DOF** (giroscópio + quaterniões) e **hand tracking real**
 (MediaPipe, 21 landmarks por mão) que alimenta diretamente o sistema de
 interação VR.
@@ -12,7 +12,7 @@ interação VR.
 
 ## Experiência
 
-- **Tela de boot nativa**: checa giroscópio, OpenGL ES 3.0, câmera e modelo de
+- **Tela de boot nativa**: checa giroscópio, OpenGL ES 2.0+, câmera e modelo de
   hand tracking (recursos ausentes nunca disfarçam — mensagem clara + o sistema
   continua com o que o dispositivo oferece).
 - **[ INICIAR MOTOR VR ]**: inicializa o `VRManager` (3DOF → CameraRig →

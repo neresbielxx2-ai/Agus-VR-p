@@ -91,16 +91,109 @@ object GLUtil {
         GLUtils.texSubImage2D(GLES20.GL_TEXTURE_2D, 0, left, top, bitmap, left, top)
     }
 
-    // Android's GLES30 class only exposes GLES3-specific entry points; the
-    // glGen*/glDelete* calls come in (count, int[], offset) form.
-    fun genVertexArray(): Int {
-        val a = IntArray(1)
-        GLES30.glGenVertexArrays(1, a, 0)
-        return a[0]
+    // ------------------------------------------------------------------
+    // ES2/ES3 compatibility (VAO emulation)
+    //
+    // OpenGL ES 2.0 has no vertex array objects: attribute state (pointer +
+    // enabled flag, per location) is GLOBAL. To keep the renderers written
+    // against the VAO model, we record each "vao"'s attribute configuration
+    // when it is created and re-apply it (buffer bind + pointer + enable/
+    // disable per location) every time it is "bound".
+    // ------------------------------------------------------------------
+    private class VaoAttrib {
+        var buffer = 0
+        var size = 0
+        var type = 0
+        var stride = 0
+        var offset = 0
     }
 
-    fun delVertexArray(id: Int) {
-        if (id != 0) GLES30.glDeleteVertexArrays(1, intArrayOf(id), 0)
+    private class VaoState {
+        val attrs = HashMap<Int, VaoAttrib>()
+    }
+
+    /** True when the current context is ES 3.x (from glGetString). */
+    var isES3 = false
+        private set
+
+    private val vaoStates = HashMap<Int, VaoState>()
+    private var es2VaoCounter = 0
+    private var maxAttribs = 16
+
+    /** Call on the GL thread once per context, before any other GL init. */
+    fun initCompat() {
+        val a = IntArray(1)
+        GLES20.glGetIntegerv(GLES20.GL_MAX_VERTEX_ATTRIBS, a, 0)
+        if (a[0] > 0) maxAttribs = a[0]
+        val v = GLES20.glGetString(GLES20.GL_VERSION) ?: ""
+        isES3 = v.startsWith("OpenGL ES 3")
+        vaoStates.clear()
+        es2VaoCounter = 0
+        Log.i(TAG, "GL version: $v (ES3=$isES3, maxAttribs=$maxAttribs)")
+    }
+
+    /** Clears the ES2 state map — call when the GL context is destroyed. */
+    fun resetCompat() {
+        vaoStates.clear()
+        es2VaoCounter = 0
+    }
+
+    /** Android's GLES30 class only exposes GLES3-specific entry points; the
+     *  glGen*/glDelete* calls come in (count, int[], offset) form. */
+    fun genVertexArray(): Int {
+        if (isES3) {
+            val a = IntArray(1)
+            GLES30.glGenVertexArrays(1, a, 0)
+            return a[0]
+        }
+        es2VaoCounter += 1
+        return es2VaoCounter
+    }
+
+    fun bindVertexArray(vaoId: Int) {
+        if (isES3) {
+            GLES30.glBindVertexArray(vaoId)
+            return
+        }
+        val state = vaoStates[vaoId] ?: return
+        for (loc in 0 until maxAttribs) {
+            val a = state.attrs[loc]
+            if (a == null) {
+                GLES20.glDisableVertexAttribArray(loc)
+            } else {
+                GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, a.buffer)
+                GLES20.glVertexAttribPointer(loc, a.size, a.type, false, a.stride, a.offset)
+                GLES20.glEnableVertexAttribArray(loc)
+            }
+        }
+    }
+
+    fun delVertexArray(vaoId: Int) {
+        if (vaoId == 0) return
+        if (isES3) GLES30.glDeleteVertexArrays(1, intArrayOf(vaoId), 0)
+        vaoStates.remove(vaoId)
+    }
+
+    /**
+     * Sets the attribute pointer for [loc] of the "vao" [vaoId]. Call while
+     * the vao is bound (as in the original VAO code) and with the source
+     * buffer already bound to GL_ARRAY_BUFFER — the ES2 emulation captures
+     * that binding into the per-vao state.
+     */
+    fun attrPointer(vaoId: Int, loc: Int, size: Int, type: Int, stride: Int, offset: Int) {
+        if (!isES3) {
+            val binding = IntArray(1)
+            GLES20.glGetIntegerv(GLES20.GL_ARRAY_BUFFER_BINDING, binding, 0)
+            val st = vaoStates.getOrPut(vaoId) { VaoState() }
+            val a = st.attrs.getOrPut(loc) { VaoAttrib() }
+            a.buffer = binding[0]
+            a.size = size
+            a.type = type
+            a.stride = stride
+            a.offset = offset
+        }
+        GLES20.glVertexAttribPointer(loc, size, type, false, stride, offset)
+        GLES20.glEnableVertexAttribArray(loc)
     }
 
     fun genBuffer(): Int {

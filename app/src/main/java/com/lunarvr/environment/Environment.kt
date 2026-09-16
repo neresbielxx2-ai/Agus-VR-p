@@ -7,7 +7,6 @@ import android.graphics.Paint
 import android.graphics.RadialGradient
 import android.graphics.Shader
 import android.opengl.GLES20
-import android.opengl.GLES30
 import com.lunarvr.math.Mat4
 import com.lunarvr.math.Quat
 import com.lunarvr.math.Vec3
@@ -119,14 +118,13 @@ class Environment {
             }
         }
         skyVao = GLUtil.genVertexArray()
-        GLES30.glBindVertexArray(skyVao)
+        GLUtil.bindVertexArray(skyVao)
         skyVbo = GLUtil.genBuffer()
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, skyVbo)
         val bb = GLUtil.directFloatBuffer(verts)
         GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, verts.size * 4, bb, GLES20.GL_STATIC_DRAW)
-        GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 12, 0)
-        GLES20.glEnableVertexAttribArray(0)
-        GLES30.glBindVertexArray(0)
+        GLUtil.attrPointer(skyVao, 0, 3, GLES20.GL_FLOAT, 12, 0)
+        GLUtil.bindVertexArray(0)
     }
 
     // ------------------------------------------------------------------
@@ -191,22 +189,19 @@ class Environment {
             data[i++] = rnd.nextFloat() * 6.28f          // phase
         }
         starVao = GLUtil.genVertexArray()
-        GLES30.glBindVertexArray(starVao)
+        GLUtil.bindVertexArray(starVao)
         val oldVbo = starVbo
         starVbo = GLUtil.genBuffer()
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, starVbo)
         val bb = GLUtil.directFloatBuffer(data)
         GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, data.size * 4, bb, GLES20.GL_STATIC_DRAW)
         // aPos
-        GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 20, 0)
-        GLES20.glEnableVertexAttribArray(0)
+        GLUtil.attrPointer(starVao, 0, 3, GLES20.GL_FLOAT, 20, 0)
         // aSize
-        GLES20.glVertexAttribPointer(1, 1, GLES20.GL_FLOAT, false, 20, 12)
-        GLES20.glEnableVertexAttribArray(1)
+        GLUtil.attrPointer(starVao, 1, 1, GLES20.GL_FLOAT, 20, 12)
         // aPhase
-        GLES20.glVertexAttribPointer(2, 1, GLES20.GL_FLOAT, false, 20, 16)
-        GLES20.glEnableVertexAttribArray(2)
-        GLES30.glBindVertexArray(0)
+        GLUtil.attrPointer(starVao, 2, 1, GLES20.GL_FLOAT, 20, 16)
+        GLUtil.bindVertexArray(0)
         if (oldVbo != 0) GLES20.glDeleteBuffers(1, intArrayOf(oldVbo), 0)
     }
 
@@ -251,16 +246,14 @@ class Environment {
             5f, 0f, 5f, 1f, 0f
         )
         floorVao = GLUtil.genVertexArray()
-        GLES30.glBindVertexArray(floorVao)
+        GLUtil.bindVertexArray(floorVao)
         floorVbo = GLUtil.genBuffer()
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, floorVbo)
         val bb = GLUtil.directFloatBuffer(verts)
         GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, verts.size * 4, bb, GLES20.GL_STATIC_DRAW)
-        GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 20, 0)
-        GLES20.glEnableVertexAttribArray(0)
-        GLES20.glVertexAttribPointer(1, 2, GLES20.GL_FLOAT, false, 20, 12)
-        GLES20.glEnableVertexAttribArray(1)
-        GLES30.glBindVertexArray(0)
+        GLUtil.attrPointer(floorVao, 0, 3, GLES20.GL_FLOAT, 20, 0)
+        GLUtil.attrPointer(floorVao, 1, 2, GLES20.GL_FLOAT, 20, 12)
+        GLUtil.bindVertexArray(0)
 
         // radial glow texture
         val size = 512
@@ -299,9 +292,9 @@ class Environment {
         GLES20.glUniformMatrix4fv(uSkyView, 1, false, view.m, 0)
         GLES20.glUniform3f(uSkyEye, eyePos.x, eyePos.y, eyePos.z)
         GLES20.glUniform3f(uMoonDir, moonDir.x, moonDir.y, moonDir.z)
-        GLES30.glBindVertexArray(skyVao)
+        GLUtil.bindVertexArray(skyVao)
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 15 * 25)
-        GLES30.glBindVertexArray(0)
+        GLUtil.bindVertexArray(0)
     }
 
     fun drawStars(proj: Mat4, view: Mat4, eyePos: Vec3, timeSec: Float) {
@@ -315,9 +308,9 @@ class Environment {
         GLES20.glUniformMatrix4fv(uStarView, 1, false, view.m, 0)
         GLES20.glUniform3f(uStarEye, eyePos.x, eyePos.y, eyePos.z)
         GLES20.glUniform1f(uStarTime, timeSec)
-        GLES30.glBindVertexArray(starVao)
+        GLUtil.bindVertexArray(starVao)
         GLES20.glDrawArrays(GLES20.GL_POINTS, 0, starCount)
-        GLES30.glBindVertexArray(0)
+        GLUtil.bindVertexArray(0)
         GLES20.glDepthMask(true)
     }
 
@@ -335,9 +328,9 @@ class Environment {
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, floorTex)
         GLES20.glUniform1i(uFloorTex, 0)
         GLES20.glUniform1f(uFloorAlpha, 0.9f)
-        GLES30.glBindVertexArray(floorVao)
+        GLUtil.bindVertexArray(floorVao)
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4)
-        GLES30.glBindVertexArray(0)
+        GLUtil.bindVertexArray(0)
         GLES20.glDepthMask(true)
     }
 
@@ -353,9 +346,9 @@ class Environment {
         if (skyProgram != 0) GLES20.glDeleteProgram(skyProgram)
         if (starProgram != 0) GLES20.glDeleteProgram(starProgram)
         if (floorProgram != 0) GLES20.glDeleteProgram(floorProgram)
-        if (skyVao != 0) GLES30.glDeleteVertexArrays(1, intArrayOf(skyVao), 0)
-        if (starVao != 0) GLES30.glDeleteVertexArrays(1, intArrayOf(starVao), 0)
-        if (floorVao != 0) GLES30.glDeleteVertexArrays(1, intArrayOf(floorVao), 0)
+        if (skyVao != 0) GLUtil.delVertexArray(skyVao)
+        if (starVao != 0) GLUtil.delVertexArray(starVao)
+        if (floorVao != 0) GLUtil.delVertexArray(floorVao)
         if (skyVbo != 0) GLES20.glDeleteBuffers(1, intArrayOf(skyVbo), 0)
         if (starVbo != 0) GLES20.glDeleteBuffers(1, intArrayOf(starVbo), 0)
         if (floorVbo != 0) GLES20.glDeleteBuffers(1, intArrayOf(floorVbo), 0)

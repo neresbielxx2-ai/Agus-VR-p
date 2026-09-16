@@ -1,7 +1,6 @@
 package com.lunarvr.stereo
 
 import android.opengl.GLES20
-import android.opengl.GLES30
 import com.lunarvr.math.Mat4
 import com.lunarvr.math.Vec3
 import com.lunarvr.scene.GLUtil
@@ -114,16 +113,15 @@ class StereoRenderer {
         blitProgram = GLUtil.createProgram(vs, fs, "aPos" to 0)
         blitTexUniform = GLES20.glGetUniformLocation(blitProgram, "uTex")
         blitVao = GLUtil.genVertexArray()
-        GLES30.glBindVertexArray(blitVao)
+        GLUtil.bindVertexArray(blitVao)
         blitVbo = GLUtil.genBuffer()
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, blitVbo)
         // Fullscreen triangle
         val verts = floatArrayOf(-1f, -1f, 0f, 3f, -1f, 0f, -1f, 3f, 0f)
         val buf = GLUtil.directFloatBuffer(verts)
         GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, verts.size * 4, buf, GLES20.GL_STATIC_DRAW)
-        GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 12, 0)
-        GLES20.glEnableVertexAttribArray(0)
-        GLES30.glBindVertexArray(0)
+        GLUtil.attrPointer(blitVao, 0, 3, GLES20.GL_FLOAT, 12, 0)
+        GLUtil.bindVertexArray(0)
         ready = true
     }
 
@@ -184,9 +182,9 @@ class StereoRenderer {
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, rt.colorTextureId)
         GLES20.glUniform1i(blitTexUniform, 0)
-        GLES30.glBindVertexArray(blitVao)
+        GLUtil.bindVertexArray(blitVao)
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 3)
-        GLES30.glBindVertexArray(0)
+        GLUtil.bindVertexArray(0)
     }
 
     private fun renderEyeInto(
@@ -207,7 +205,7 @@ class StereoRenderer {
         target?.release()
         target = null
         if (blitProgram != 0) GLES20.glDeleteProgram(blitProgram)
-        if (blitVao != 0) GLES30.glDeleteVertexArrays(1, intArrayOf(blitVao), 0)
+        if (blitVao != 0) GLUtil.delVertexArray(blitVao)
         if (blitVbo != 0) GLES20.glDeleteBuffers(1, intArrayOf(blitVbo), 0)
         blitProgram = 0; blitVao = 0; blitVbo = 0
         ready = false

@@ -49,8 +49,10 @@ class LunarVRActivity : ComponentActivity() {
     }
 
     companion object {
-        // EGL_OPENGL_ES3_BIT_KHR (not exposed by android.opengl.EGL14)
-        private const val EGL_OPENGL_ES3_BIT_KHR = 0x400
+        // Minimum required: OpenGL ES 2.0 (present on essentially all
+        // Android devices since API 18). ES 3.0 is used opportunistically
+        // (native VAOs) via GLUtil when the context provides it.
+        private const val EGL_OPENGL_ES2_BIT = 0x0004
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,7 +61,9 @@ class LunarVRActivity : ComponentActivity() {
 
         val root = FrameLayout(this)
         val surface = GLSurfaceView(this)
-        surface.setEGLContextClientVersion(3)
+        // ES 2.0 context: works on the maximum set of devices. The render
+        // layer is ES2/ES3-compatible (GLUtil emulates VAOs on ES 2.0).
+        surface.setEGLContextClientVersion(2)
         surface.visibility = View.INVISIBLE
         glSurface = surface
         root.addView(surface, FrameLayout.LayoutParams(-1, -1))
@@ -185,7 +189,7 @@ class LunarVRActivity : ComponentActivity() {
             sm.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR) != null ||
             (sm.getDefaultSensor(Sensor.TYPE_GYROSCOPE) != null &&
                 sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null)
-        val hasGles = hasGles3()
+        val hasGles = hasGles2()
         val cm = getSystemService(Context.CAMERA_SERVICE) as? CameraManager
         var hasCam = false
         cm?.cameraIdList?.forEach { id ->
@@ -201,7 +205,7 @@ class LunarVRActivity : ComponentActivity() {
         }
         val list = listOf(
             Triple("Giroscópio (3DOF)", hasOrientation, "indisponível — orientação fixa"),
-            Triple("OpenGL ES 3.0", hasGles, "indisponível"),
+            Triple("OpenGL ES 2.0+", hasGles, "indisponível"),
             Triple("Câmera (hand tracking)", hasCam, "indisponível"),
             Triple("Modelo de hand tracking", hasModel, "será baixado no 1º uso")
         )
@@ -212,19 +216,19 @@ class LunarVRActivity : ComponentActivity() {
         }
         if (!hasGles) {
             warningView?.text =
-                "Este dispositivo não possui suporte necessário para este recurso (OpenGL ES 3.0). " +
+                "Este dispositivo não possui suporte necessário para este recurso (OpenGL ES 2.0). " +
                 "A experiência VR não poderá iniciar."
         }
         return list
     }
 
-    private fun hasGles3(): Boolean {
+    private fun hasGles2(): Boolean {
         return try {
             val display = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY)
             val v = IntArray(2)
             if (!EGL14.eglInitialize(display, v, 0, v, 1)) return false
             val attrs = intArrayOf(
-                EGL14.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES3_BIT_KHR,
+                EGL14.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
                 EGL14.EGL_SURFACE_TYPE, EGL14.EGL_WINDOW_BIT,
                 EGL14.EGL_RED_SIZE, 8, EGL14.EGL_GREEN_SIZE, 8,
                 EGL14.EGL_BLUE_SIZE, 8, EGL14.EGL_ALPHA_SIZE, 8,
@@ -245,8 +249,8 @@ class LunarVRActivity : ComponentActivity() {
     // ------------------------------------------------------------------
     private fun startVR() {
         if (vrActive) return
-        if (!hasGles3()) {
-            warningView?.text = "OpenGL ES 3.0 indisponível neste dispositivo — a experiência VR não pode iniciar."
+        if (!hasGles2()) {
+            warningView?.text = "OpenGL ES 2.0 indisponível neste dispositivo — a experiência VR não pode iniciar."
             return
         }
         val surface = glSurface ?: return
