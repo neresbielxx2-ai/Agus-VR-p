@@ -85,7 +85,7 @@ class Environment {
                 vec3 mid = vec3(0.036, 0.052, 0.092);
                 vec3 bot = vec3(0.006, 0.009, 0.018);
                 vec3 col = mix(mid, top, smoothstep(0.0, 0.55, h));
-                col = mix(col, bot, smoothstep(0.0, -0.5, h));
+                col = mix(col, bot, smoothstep(-0.5, 0.0, h));
                 float m = clamp(dot(d, uMoonDir), 0.0, 1.0);
                 col += vec3(0.92, 0.96, 1.0) * pow(m, 1400.0) * 0.9;
                 col += vec3(0.55, 0.66, 0.92) * pow(m, 90.0) * 0.09;
@@ -153,7 +153,7 @@ class Environment {
             void main() {
                 vec2 c = gl_PointCoord - 0.5;
                 float r = length(c) * 2.0;
-                float a = smoothstep(1.0, 0.15, r) * vA;
+                float a = (1.0 - smoothstep(0.15, 1.0, r)) * vA;
                 gl_FragColor = vec4(vec3(0.80, 0.87, 1.0) * a, a);
             }
         """.trimIndent()

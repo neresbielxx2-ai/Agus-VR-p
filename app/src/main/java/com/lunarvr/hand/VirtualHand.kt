@@ -134,7 +134,7 @@ class VirtualHand {
             void main() {
                 vec2 c = vUv - 0.5;
                 float r = length(c) * 2.0;
-                float a = smoothstep(1.0, 0.05, r) * uColor.a;
+                float a = (1.0 - smoothstep(0.05, 1.0, r)) * uColor.a;
                 gl_FragColor = vec4(uColor.rgb * a, a);
             }
         """.trimIndent()

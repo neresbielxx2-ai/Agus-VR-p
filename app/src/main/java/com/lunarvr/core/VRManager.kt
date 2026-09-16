@@ -136,7 +136,10 @@ class VRManager(
         stereo.renderScale = settings.renderScale()
 
         Log.i(TAG, "[3-4/8] WorldRoot + CameraRig created (GL side)")
-        glSurface.setEGLContextClientVersion(3)
+        // ES 2.0 context (ES2/ES3-compat render layer via GLUtil) — do NOT
+        // request version 3 here: it would override the activity's config
+        // and crash on ES2-only devices
+        glSurface.setEGLContextClientVersion(2)
         glSurface.setRenderer(renderer)
         glSurface.renderMode = android.opengl.GLSurfaceView.RENDERMODE_CONTINUOUSLY
         glSurface.visibility = View.VISIBLE
@@ -152,12 +155,34 @@ class VRManager(
     // ------------------------------------------------------------------
     // GL renderer (GL thread = the render thread)
     // ------------------------------------------------------------------
+    @Volatile private var glErrorShown = false
+
+    /** Surfaces a GL failure as a dialog instead of a black screen + crash. */
+    private fun reportGlError(where: String, t: Throwable) {
+        Log.e(TAG, "GL failure in $where", t)
+        if (glErrorShown) return
+        glErrorShown = true
+        try {
+            activity.runOnUiThread {
+                android.app.AlertDialog.Builder(activity)
+                    .setTitle("Erro no motor VR")
+                    .setMessage("Falha em $where:\n\n${t.javaClass.simpleName}: ${t.message}")
+                    .setPositiveButton("OK") { _, _ -> activity.onVRQuit() }
+                    .setCancelable(false)
+                    .show()
+            }
+        } catch (e: Throwable) {
+            Log.e(TAG, "Could not show GL error dialog", e)
+        }
+    }
+
     private val renderer = object : android.opengl.GLSurfaceView.Renderer {
         override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
             Log.i(TAG, "[5-6/8] GL context: cameras + SBS configured")
             // ES2/ES3 compat: detect the context version and (re)start the
             // VAO-emulation state before any GL object is created
             GLUtil.initCompat()
+            try {
             // if the surface was destroyed/recreated (rotation), the GL
             // objects died with the context — reset state and rebuild
             val recreating = ::menus.isInitialized
@@ -200,6 +225,9 @@ class VRManager(
             glReady = true
             startNs = System.nanoTime()
             lastNs = 0L
+            } catch (t: Throwable) {
+                reportGlError("inicialização do OpenGL (shaders/buffers/texturas)", t)
+            }
         }
 
         override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
@@ -208,7 +236,11 @@ class VRManager(
 
         override fun onDrawFrame(gl: GL10?) {
             if (!glReady) return
-            drawFrame()
+            try {
+                drawFrame()
+            } catch (t: Throwable) {
+                reportGlError("renderização de quadro", t)
+            }
         }
     }
 
