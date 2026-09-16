@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class RenderTarget(var width: Int, var height: Int) {
 
     private var fbo = 0
-    val colorTextureId: Int
+    var colorTextureId: Int
     private var depthRb = 0
 
     init {

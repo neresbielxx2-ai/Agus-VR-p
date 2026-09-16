@@ -234,7 +234,7 @@ class HandTracker(private val context: Context) {
             hands.add(arr)
             // MediaPipe reports from the camera's viewpoint. For a raw front
             // camera image, the user's RIGHT hand is labeled "Left".
-            val label = rawH.getOrNull(i)?.getOrNull(0)?.label()
+            val label = rawH.getOrNull(i)?.getOrNull(0)?.displayName()
             val mpLeft = label == "Left"
             val isUserLeft = if (usesFrontCamera) !mpLeft else mpLeft
             handed[i] = if (isUserLeft) 0 else 1

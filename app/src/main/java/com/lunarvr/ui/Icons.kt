@@ -60,7 +60,7 @@ object Icons {
                 canvas.drawCircle(x + c, y + c, size * 0.24f, paint)
                 paint.strokeWidth = size * 0.11f
                 for (i in 0 until 8) {
-                    val a = PI * i / 4f
+                    val a = (PI * i / 4.0).toFloat()
                     val r0 = size * 0.34f
                     val r1 = size * 0.46f
                     canvas.drawLine(
@@ -103,7 +103,9 @@ object Icons {
                 paint.strokeWidth = size * 0.09f
                 val r = RectF(x + c - size * 0.28f, y + c - size * 0.28f, x + c + size * 0.28f, y + c + size * 0.28f)
                 canvas.drawRoundRect(r, 6f, 6f, paint)
-                canvas.drawRoundRect(r.inset(size * 0.12f, size * 0.12f), 3f, 3f, paint)
+                val ri = RectF(r)
+                ri.inset(size * 0.12f, size * 0.12f)
+                canvas.drawRoundRect(ri, 3f, 3f, paint)
                 for (i in -1..1) {
                     val o = i * size * 0.16f
                     canvas.drawLine(x + c + o, y + c - size * 0.28f, x + c + o, y + c - size * 0.42f, paint)

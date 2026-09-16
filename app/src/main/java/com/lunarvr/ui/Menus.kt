@@ -95,7 +95,7 @@ class MenuController(
     private lateinit var itemClockTime: UIItem
     private lateinit var itemClockDate: UIItem
 
-    private var lastClockSecond = -1
+    private var lastClockSecond = -1L
     private var lastSysUpdate = 0f
     private var elapsedSec = 0f
 

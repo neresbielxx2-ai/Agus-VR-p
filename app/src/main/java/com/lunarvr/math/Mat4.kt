@@ -33,7 +33,7 @@ class Mat4 {
                 out[c * 4 + r] = s
             }
         }
-        m.set(0, out)
+        System.arraycopy(out, 0, m, 0, m.size)
         return this
     }
 
