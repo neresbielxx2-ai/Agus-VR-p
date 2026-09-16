@@ -141,10 +141,10 @@ class RayRenderer {
         paint.shader = null
         paint.style = Paint.Style.STROKE
         paint.strokeWidth = 7f
-        paint.color = 0xF2FFFFFF
+        paint.color = 0xF2FFFFFF.toInt()
         cv.drawCircle(size / 2f, size / 2f, size * 0.30f, paint)
         paint.style = Paint.Style.FILL
-        paint.color = 0xFFFFFFFF
+        paint.color = 0xFFFFFFFF.toInt()
         cv.drawCircle(size / 2f, size / 2f, size * 0.075f, paint)
         cursorTex = GLUtil.createTexture(size, size)
         GLUtil.uploadBitmap(cursorTex, bmp)

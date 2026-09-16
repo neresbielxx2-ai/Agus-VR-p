@@ -178,16 +178,11 @@ class HandTracker(private val context: Context) {
             proxy.close()
             return@Analyzer
         }
-        val media = proxy.image
-        if (media == null) {
-            proxy.close()
-            return@Analyzer
-        }
         var ts = System.currentTimeMillis()
         if (ts <= lastTsMs) ts = lastTsMs + 1
         lastTsMs = ts
         var bmp: android.graphics.Bitmap? =
-            try { media.toBitmap() } catch (t: Throwable) { null }
+            try { proxy.toBitmap() } catch (t: Throwable) { null }
         if (bmp != null) {
             val rot = proxy.imageInfo.rotationDegrees
             if (rot != 0) {
@@ -232,14 +227,14 @@ class HandTracker(private val context: Context) {
             val lm = rawLm[i]
             val arr = FloatArray(lm.size * 3)
             for (j in 0 until lm.size) {
-                arr[j * 3] = lm[j].x
-                arr[j * 3 + 1] = lm[j].y
-                arr[j * 3 + 2] = lm[j].z
+                arr[j * 3] = lm[j].x()
+                arr[j * 3 + 1] = lm[j].y()
+                arr[j * 3 + 2] = lm[j].z()
             }
             hands.add(arr)
             // MediaPipe reports from the camera's viewpoint. For a raw front
             // camera image, the user's RIGHT hand is labeled "Left".
-            val label = rawH.getOrNull(i)?.getOrNull(0)?.label
+            val label = rawH.getOrNull(i)?.getOrNull(0)?.label()
             val mpLeft = label == "Left"
             val isUserLeft = if (usesFrontCamera) !mpLeft else mpLeft
             handed[i] = if (isUserLeft) 0 else 1
