@@ -107,7 +107,7 @@ class Panel3D(
         // face the user (origin) with yaw only
         val dx = -pos.x
         val dz = -pos.z
-        yaw = kotlin.math.atan2(dx, dz)
+        yaw = kotlin.math.atan2(dx.toDouble(), dz.toDouble()).toFloat()
         state = STATE_OPENING
         animT = 0.02f
     }

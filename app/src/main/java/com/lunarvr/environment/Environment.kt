@@ -110,12 +110,12 @@ class Environment {
         var i = 0
         for (a in 0..lat) {
             val theta = PI * a / lat
-            val st = sin(theta); val ct = cos(theta)
+            val st = sin(theta).toFloat(); val ct = cos(theta).toFloat()
             for (b in 0..lon) {
-                val phi = 2f * PI * b / lon
-                verts[i++] = (radius * st * cos(phi))
-                verts[i++] = (radius * ct)
-                verts[i++] = (radius * st * sin(phi))
+                val phi = (2f * PI * b / lon).toFloat()
+                verts[i++] = (radius * st * cos(phi.toDouble())).toFloat()
+                verts[i++] = (radius * ct).toFloat()
+                verts[i++] = (radius * st * sin(phi.toDouble())).toFloat()
             }
         }
         skyVao = GLES30.glGenVertexArrays()
@@ -184,9 +184,9 @@ class Environment {
             val t = rnd.nextFloat() * 2f * PI
             val sxy = kotlin.math.sqrt((1f - u * u).coerceAtLeast(0f))
             val r = 38f
-            data[i++] = (r * sxy * cos(t))
+            data[i++] = (r * sxy * cos(t)).toFloat()
             data[i++] = (r * u)
-            data[i++] = (r * sxy * sin(t))
+            data[i++] = (r * sxy * sin(t)).toFloat()
             data[i++] = (1.2f + rnd.nextFloat() * 2.2f) // size px
             data[i++] = rnd.nextFloat() * 6.28f          // phase
         }
@@ -327,7 +327,7 @@ class Environment {
         GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA)
         GLES20.glDepthMask(false)
         GLES20.glUseProgram(floorProgram)
-        val model = Mat4().compose(Vec3(0f, -1.05f, 0f), Quat.fromAxisAngle(1f, 0f, 0f, -PI / 2f), Vec3(1f, 1f, 1f))
+        val model = Mat4().compose(Vec3(0f, -1.05f, 0f), Quat.fromAxisAngle(1f, 0f, 0f, -(PI / 2f).toFloat()), Vec3(1f, 1f, 1f))
         GLES20.glUniformMatrix4fv(uFloorModel, 1, false, model.m, 0)
         GLES20.glUniformMatrix4fv(uFloorView, 1, false, view.m, 0)
         GLES20.glUniformMatrix4fv(uFloorProj, 1, false, proj.m, 0)

@@ -473,7 +473,7 @@ class MenuController(
     }
 
     private fun faceOrigin(p: Panel3D) {
-        p.yaw = atan2(-p.pos.x, -p.pos.z)
+        p.yaw = atan2(-p.pos.x.toDouble(), -p.pos.z.toDouble()).toFloat()
     }
 
     // ------------------------------------------------------------------
@@ -525,7 +525,7 @@ class MenuController(
                 fwd.y * 1.25f + up.y * 0.30f + 0.12f,
                 fwd.z * 1.25f + up.z * 0.30f
             )
-            panel.yaw = atan2(-panel.pos.x, -panel.pos.z)
+            panel.yaw = atan2(-panel.pos.x.toDouble(), -panel.pos.z.toDouble()).toFloat()
             panel.state = Panel3D.STATE_OPENING
             panel.animT = 0.02f
             sound.play("open")

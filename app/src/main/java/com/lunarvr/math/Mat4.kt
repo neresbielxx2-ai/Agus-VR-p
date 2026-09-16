@@ -39,7 +39,7 @@ class Mat4 {
 
     fun perspective(fovyRad: Float, aspect: Float, near: Float, far: Float): Mat4 {
         m.fill(0f)
-        val f = 1f / tan(fovyRad / 2f)
+        val f = (1.0 / tan(fovyRad.toDouble() * 0.5)).toFloat()
         m[0] = f / aspect
         m[5] = f
         m[10] = (far + near) / (near - far)

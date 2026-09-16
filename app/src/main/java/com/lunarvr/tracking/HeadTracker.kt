@@ -154,7 +154,7 @@ class HeadTracker(context: Context) : SensorEventListener {
 
         // Smoothing: exponential slerp + micro-jitter deadzone
         val tau = 0.012f + smoothing.coerceIn(0f, 0.9f) * 0.22f
-        val k = 1f - exp(-dt / tau)
+        val k = 1f - exp(-dt.toDouble() / tau.toDouble()).toFloat()
         if (qOut.angleTo(sGained) < 0.002f) {
             // micro-oscillation correction: keep the pose
         } else {
@@ -169,7 +169,7 @@ class HeadTracker(context: Context) : SensorEventListener {
         val n = sqrt(ax * ax + ay * ay)
         if (n < 0.5f) return Quat.IDENTITY // no gravity data yet
         // up in device frame ~ (-ax, -ay, 0)/|..| ; C = Rz(theta), theta = atan2(-ax, ay)
-        val theta = atan2(-ax, ay)
+        val theta = atan2(-ax.toDouble(), ay.toDouble()).toFloat()
         return Quat.fromAxisAngle(0f, 0f, 1f, theta)
     }
 
@@ -191,7 +191,7 @@ class HeadTracker(context: Context) : SensorEventListener {
                     accelZ = event.values[2]
                 } else {
                     val dt = (nowNs - lastAccelNs) / 1e9f
-                    val a = 1f - exp(-dt / 0.45f)
+                    val a = 1f - exp(-dt.toDouble() / 0.45).toFloat()
                     accelX += (event.values[0] - accelX) * a
                     accelY += (event.values[1] - accelY) * a
                     accelZ += (event.values[2] - accelZ) * a

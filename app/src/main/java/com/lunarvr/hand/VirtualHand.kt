@@ -191,8 +191,8 @@ class VirtualHand {
         val o0 = FloatArray(sides * 3)
         val o1 = FloatArray(sides * 3)
         for (i in 0 until sides) {
-            val ang = 2f * PI * i / sides
-            val c = cos(ang); val s = sin(ang)
+            val ang = 2 * PI * i / sides
+            val c = cos(ang).toFloat(); val s = sin(ang).toFloat()
             val nx = u.x * c + v.x * s
             val ny = u.y * c + v.y * s
             val nz = u.z * c + v.z * s
@@ -217,11 +217,14 @@ class VirtualHand {
         i: Int, j: Int, lat: Int, lon: Int
     ): Pair<Vec3, Vec3> {
         val theta = PI * i / lat
-        val phi = 2f * PI * j / lon
-        val st = sin(theta)
-        val dirX = u.x * st * cos(phi) + n.x * cos(theta) + v.x * st * sin(phi)
-        val dirY = u.y * st * cos(phi) + n.y * cos(theta) + v.y * st * sin(phi)
-        val dirZ = u.z * st * cos(phi) + n.z * cos(theta) + v.z * st * sin(phi)
+        val phi = 2 * PI * j / lon
+        val st = sin(theta).toFloat()
+        val cphi = cos(phi).toFloat()
+        val ctheta = cos(theta).toFloat()
+        val sphi = sin(phi).toFloat()
+        val dirX = u.x * st * cphi + n.x * ctheta + v.x * st * sphi
+        val dirY = u.y * st * cphi + n.y * ctheta + v.y * st * sphi
+        val dirZ = u.z * st * cphi + n.z * ctheta + v.z * st * sphi
         return Pair(
             Vec3(center.x + dirX * r, center.y + dirY * r, center.z + dirZ * r),
             Vec3(dirX, dirY, dirZ)
@@ -253,8 +256,8 @@ class VirtualHand {
         val p0 = FloatArray(sides * 3)
         val p1 = FloatArray(sides * 3)
         for (i in 0 until sides) {
-            val ang = 2f * PI * i / sides
-            val c = cos(ang); val s = sin(ang)
+            val ang = 2 * PI * i / sides
+            val c = cos(ang).toFloat(); val s = sin(ang).toFloat()
             val px = (u.x * c + v.x * s) * radius
             val py = (u.y * c + v.y * s) * radius
             val pz = (u.z * c + v.z * s) * radius
@@ -350,7 +353,7 @@ class VirtualHand {
         GLES20.glUniformMatrix4fv(uView, 1, false, view.m, 0)
         GLES20.glUniform3f(uCamPos, eyePos.x, eyePos.y, eyePos.z)
         GLES20.glUniform1f(uAlpha, if (quality == 0) 0.38f else 0.30f)
-        val glow = if (hand.pinching) 0.6f + 0.4f * sin(timeSec * 18f) else if (hand.isPoint) 0.25f else 0f
+        val glow = if (hand.pinching) 0.6f + 0.4f * sin(timeSec.toDouble() * 18).toFloat() else if (hand.isPoint) 0.25f else 0f
         GLES20.glUniform1f(uGlow, glow)
 
         GLES30.glBindVertexArray(vao)

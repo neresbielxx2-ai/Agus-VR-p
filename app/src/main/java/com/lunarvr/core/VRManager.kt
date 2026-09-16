@@ -1,7 +1,7 @@
 package com.lunarvr.core
 
 import javax.microedition.khronos.opengles.GL10
-import android.opengl.EGLConfig
+import javax.microedition.khronos.egl.EGLConfig
 import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
@@ -23,6 +23,7 @@ import com.lunarvr.scene.SceneNode
 import com.lunarvr.settings.SettingsStore
 import com.lunarvr.stereo.StereoRenderer
 import com.lunarvr.tracking.HeadTracker
+import com.lunarvr.LunarVRActivity
 import com.lunarvr.ui.MenuController
 import com.lunarvr.ui.Panel3D
 import com.lunarvr.ui.UIItem
@@ -45,7 +46,7 @@ import kotlin.math.max
  *  4. WorldRoot                 8. MainMenu 3D -> VR experience
  */
 class VRManager(
-    private val activity: ComponentActivity,
+    private val activity: LunarVRActivity,
     private val glSurface: android.opengl.GLSurfaceView
 ) {
 
@@ -332,7 +333,7 @@ class VRManager(
         )
         for ((name, p) in map) {
             val node = menuNodes[name] ?: continue
-            node.position.copy(p.currentPos)
+            node.position.set(p.currentPos.x, p.currentPos.y, p.currentPos.z)
             node.rotation.set(p.currentQuat.x, p.currentQuat.y, p.currentQuat.z, p.currentQuat.w)
             node.scale.set(p.currentScale, p.currentScale, p.currentScale)
         }

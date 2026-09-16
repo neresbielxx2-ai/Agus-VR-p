@@ -70,7 +70,7 @@ class SoundBank(private val context: Context) {
     // ------------------------------------------------------------------
     private fun env(t: Float, dur: Float, attack: Float = 0.004f): Float {
         val a = min(t / attack, 1f)
-        val d = exp(-(t / dur) * 5f)
+        val d = exp((-t / dur).toDouble() * 5.0).toFloat()
         return a * d
     }
 

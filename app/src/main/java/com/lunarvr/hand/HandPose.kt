@@ -82,15 +82,15 @@ class HandPose(val slot: Int) {
         val x5 = data[5 * 3]; val y5 = data[5 * 3 + 1]
         val x17 = data[17 * 3]; val y17 = data[17 * 3 + 1]
         val wNorm = maxOf(abs(x17 - x5), 0.02f)
-        val vHalf = tan(vFovY / 2f)
-        val hHalf = tan(vFovY / 2f) * aspect
+        val vHalf = tan(vFovY.toDouble() * 0.5).toFloat()
+        val hHalf = vHalf * aspect
         // physical width ~ 0.085 m : d = 0.085 / (wNorm * 2 * hHalf)
         val dNew = (0.085f / (wNorm * 2f * hHalf)).coerceIn(0.28f, 1.15f)
         depth = depth + (dNew - depth) * 0.35f
 
         val tanH = hHalf
         val tanV = vHalf
-        val kHand = 1f - exp(-dt / (0.015f + handSmoothing * 0.16f))
+        val kHand = 1f - exp(-dt.toDouble() / (0.015 + handSmoothing * 0.16)).toFloat()
 
         for (i in 0 until 21) {
             val nx = data[i * 3]

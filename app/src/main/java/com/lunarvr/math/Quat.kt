@@ -71,18 +71,23 @@ class Quat(var x: Float = 0f, var y: Float = 0f, var z: Float = 0f, var w: Float
             val rw = w + (bw - w) * t
             return Quat(rx, ry, rz, rw).normalize()
         }
-        val halfTheta = acos(cosHalf.coerceIn(-1f, 1f))
+        val halfTheta = acos(cosHalf.coerceIn(-1f, 1f).toDouble())
         val sinHalf = sin(halfTheta)
         if (sinHalf < 1e-6f) return copy()
         val a = sin((1f - t) * halfTheta) / sinHalf
         val bb = sin(t * halfTheta) / sinHalf
-        return Quat(a * x + bb * bx, a * y + bb * by, a * z + bb * bz, a * w + bb * bw).normalize()
+        return Quat(
+            (a * x + bb * bx).toFloat(),
+            (a * y + bb * by).toFloat(),
+            (a * z + bb * bz).toFloat(),
+            (a * w + bb * bw).toFloat()
+        ).normalize()
     }
 
     /** Smaller angular distance to o, in radians. */
     fun angleTo(o: Quat): Float {
         val d = abs(dot(o)).coerceIn(0f, 1f)
-        return 2f * acos(d)
+        return 2f * acos(d.toDouble()).toFloat()
     }
 
     override fun toString(): String = "Quat(${x}, ${y}, ${z}, ${w})"
@@ -93,8 +98,8 @@ class Quat(var x: Float = 0f, var y: Float = 0f, var z: Float = 0f, var w: Float
         fun fromAxisAngle(axisX: Float, axisY: Float, axisZ: Float, angleRad: Float): Quat {
             val n = sqrt(axisX * axisX + axisY * axisY + axisZ * axisZ)
             if (n < 1e-8f) return Quat(0f, 0f, 0f, 1f)
-            val s = sin(angleRad / 2f) / n
-            return Quat(axisX * s, axisY * s, axisZ * s, cos(angleRad / 2f))
+            val s = sin(angleRad.toDouble() * 0.5) / n
+            return Quat((axisX * s).toFloat(), (axisY * s).toFloat(), (axisZ * s).toFloat(), cos(angleRad.toDouble() * 0.5).toFloat())
         }
 
         fun fromAxisAngle(axis: Vec3, angleRad: Float): Quat =
