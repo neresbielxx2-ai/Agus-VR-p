@@ -109,8 +109,8 @@ class HandTracker(private val context: Context) {
                         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                         .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888)
                         .setTargetResolution(Size(640, 480))
-                        .setAnalyzer(cameraExecutor, imageAnalyzer)
                         .build()
+                    analysis.setAnalyzer(cameraExecutor, imageAnalyzer)
                     p.bindToLifecycle(context as androidx.lifecycle.LifecycleOwner, selector, analysis)
                 }
             } catch (t: Throwable) {
@@ -186,30 +186,33 @@ class HandTracker(private val context: Context) {
         var ts = System.currentTimeMillis()
         if (ts <= lastTsMs) ts = lastTsMs + 1
         lastTsMs = ts
-        var bmp = try { media.toBitmap() } catch (t: Throwable) { null }
+        var bmp: android.graphics.Bitmap? =
+            try { media.toBitmap() } catch (t: Throwable) { null }
         if (bmp != null) {
             val rot = proxy.imageInfo.rotationDegrees
             if (rot != 0) {
                 val m = android.graphics.Matrix().apply { setRotate(rot.toFloat()) }
+                val original = bmp
                 val rotated = android.graphics.Bitmap.createBitmap(
-                    bmp, 0, 0, bmp.width, bmp.height, m, true
+                    original, 0, 0, original.width, original.height, m, true
                 )
-                bmp.recycle()
+                original.recycle()
                 bmp = rotated
             }
         }
-        if (bmp == null) {
+        val finalBmp = bmp
+        if (finalBmp == null) {
             proxy.close()
             return@Analyzer
         }
         try {
-            val mpImage = BitmapImageBuilder(bmp).build()
+            val mpImage = BitmapImageBuilder(finalBmp).build()
             val result = landmarker.detectForVideo(mpImage, ts)
             publish(result)
         } catch (t: Throwable) {
             Log.e(TAG, "detect failed", t)
         } finally {
-            bmp.recycle()
+            finalBmp.recycle()
             proxy.close()
         }
     }
@@ -220,8 +223,8 @@ class HandTracker(private val context: Context) {
             latest = null
             return
         }
-        val rawLm = result.landmarks
-        val rawH = result.handedness
+        val rawLm = result.landmarks()
+        val rawH = result.handedness()
         val n = rawLm.size
         val hands = ArrayList<FloatArray>(n)
         val handed = IntArray(n)
