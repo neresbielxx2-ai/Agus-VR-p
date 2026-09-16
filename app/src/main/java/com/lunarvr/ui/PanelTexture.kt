@@ -39,7 +39,14 @@ class PanelTexture(val widthPx: Int, val heightPx: Int, private val titleIcon: I
 
     fun regionUpload(rect: Rect) {
         initGL()
-        GLUtil.uploadBitmapRegion(texId, bitmap, rect.left, rect.top)
+        val w = rect.width()
+        val h = rect.height()
+        if (w <= 0 || h <= 0) return
+        // Crop the exact region (returns a fresh ARGB_8888 bitmap) and upload
+        // it at its texture offset — see GLUtil.uploadBitmapRegion.
+        val crop = Bitmap.createBitmap(bitmap, rect.left, rect.top, w, h)
+        GLUtil.uploadBitmapRegion(texId, crop, rect.left, rect.top)
+        crop.recycle()
     }
 
     /** Clears a region to transparent. */

@@ -85,10 +85,16 @@ object GLUtil {
         GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0)
     }
 
-    /** Uploads a rectangular region of a bitmap into an existing texture. */
-    fun uploadBitmapRegion(texId: Int, bitmap: Bitmap, left: Int, top: Int) {
+    /**
+     * Uploads [bitmap] into the texture at (xoffset, yoffset). [bitmap] must
+     * be a cropped ARGB_8888 copy of the desired region — the 5-arg
+     * GLUtils.texSubImage2D derives the GL pixel format/type from the
+     * bitmap itself. (The older 7-arg (bitmap, x, y) overload no longer
+     * exists on modern SDKs; that signature now takes (format, type).)
+     */
+    fun uploadBitmapRegion(texId: Int, bitmap: Bitmap, xoffset: Int, yoffset: Int) {
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texId)
-        GLUtils.texSubImage2D(GLES20.GL_TEXTURE_2D, 0, left, top, bitmap, left, top)
+        GLUtils.texSubImage2D(GLES20.GL_TEXTURE_2D, 0, xoffset, yoffset, bitmap)
     }
 
     // ------------------------------------------------------------------
