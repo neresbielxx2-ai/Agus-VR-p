@@ -18,7 +18,6 @@ import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarker
 import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarkerResult
 import java.io.File
-import java.io.FileInputStream
 import java.net.URL
 import java.util.concurrent.Executors
 
@@ -107,8 +106,8 @@ class HandTracker(private val context: Context) {
                     cameraProvider = p
                     p.unbindAll()
                     val analysis = ImageAnalysis.Builder()
-                        .setBackpressureMode(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                        .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_0888)
+                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                        .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888)
                         .setTargetResolution(Size(640, 480))
                         .setAnalyzer(cameraExecutor, imageAnalyzer)
                         .build()
@@ -134,7 +133,7 @@ class HandTracker(private val context: Context) {
             base = BaseOptions.builder().setModelAssetPath("hand_landmarker.task").build()
         } else if (modelFile.exists()) {
             base = BaseOptions.builder()
-                .setModelAssetFileDescriptor(FileInputStream(modelFile).channel.fileDescriptor)
+                .setModelAssetBuffer(readDirect(modelFile))
                 .build()
         } else {
             // Runtime download fallback (normal builds bundle the asset).
@@ -144,7 +143,7 @@ class HandTracker(private val context: Context) {
                 throw IllegalStateException("hand_landmarker.task unavailable")
             }
             base = BaseOptions.builder()
-                .setModelAssetFileDescriptor(FileInputStream(modelFile).channel.fileDescriptor)
+                .setModelAssetBuffer(readDirect(modelFile))
                 .build()
         }
         val options = HandLandmarker.HandLandmarkerOptions.builder()
@@ -162,7 +161,18 @@ class HandTracker(private val context: Context) {
         Log.i(TAG, "Hand landmarker ready (front=${usesFrontCamera})")
     }
 
-    private val imageAnalyzer = ImageAnalysis.Analyzer<ImageProxy> { proxy ->
+    private fun readDirect(file: File): java.nio.ByteBuffer {
+        val buf = java.nio.ByteBuffer.allocateDirect(file.length().toInt())
+        file.inputStream().use { input ->
+            val tmp = ByteArray(8192)
+            var r = input.read(tmp)
+            while (r >= 0) { buf.put(tmp, 0, r); r = input.read(tmp) }
+        }
+        buf.position(0)
+        return buf
+    }
+
+    private val imageAnalyzer = ImageAnalysis.Analyzer { proxy ->
         val landmarker = handLandmarker
         if (landmarker == null || stopping) {
             proxy.close()

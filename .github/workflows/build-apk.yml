@@ -36,6 +36,14 @@ jobs:
       - name: Make Gradle wrapper executable
         run: chmod +x gradlew
 
+      - name: Report resolved dependency versions
+        run: |
+          ./gradlew :app:dependencies --configuration debugCompileClasspath 2>/dev/null \
+            | grep -E "androidx\.camera|mediapipe|androidx\.activity|androidx\.core:core" | sort -u \
+            | head -40 | while IFS= read -r line; do
+              echo "::notice title=Resolved dependency::${line#*--- }"
+            done || true
+
       - name: Run unit tests (math engine)
         run: |
           ./gradlew testDebugUnitTest --stacktrace 2>&1 | tee /tmp/test.log
